@@ -12,11 +12,11 @@ public class ProgressReport extends TimerTask {
 
     private static final int interval = 5;
 
-    public static ProgressReport start(@NotNull Data data) {
+    public static Timer start(@NotNull Data data) {
         final Timer timer = new Timer();
         final ProgressReport report = new ProgressReport(data);
         timer.schedule(report, 3000, interval * 1000);
-        return report;
+        return timer;
     }
 
     public interface Data {

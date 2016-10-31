@@ -34,6 +34,7 @@ public class Utils {
 
     /**
      * Custom implementation of integer summation using Strings
+     *
      * @param set list of Strings holding the integers to be added
      * @return sum as a String
      */
@@ -59,6 +60,34 @@ public class Utils {
             result = (digit % 10) + result;
         }
         if (carry > 0) result = carry + result;
+        return result;
+    }
+
+    public static String diff(String s1, String s2) {
+        while (s2.length() < s1.length()) {
+            s2 = "0" + s2;
+        }
+        while (s1.length() < s2.length()) {
+            s1 = "0" + s1;
+        }
+        if (s1.compareTo(s2) < 0) {
+            String temp = s1;
+            s1 = s2;
+            s2 = temp;
+        }
+        String result = "";
+        boolean take = false; //no carry to start off with
+        for (int i = s1.length() - 1; i >= 0; i--) {
+            int digitDiff = c2i(s1.charAt(i));
+            digitDiff -= c2i(s2.charAt(i));
+            if (take) digitDiff--;
+            take = digitDiff < 0;
+            if (take) digitDiff += 10;
+            result = digitDiff + result;
+        }
+        while (result.charAt(0) == '0') {
+            result = result.substring(1);
+        }
         return result;
     }
 
