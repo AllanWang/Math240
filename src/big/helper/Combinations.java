@@ -2,6 +2,7 @@ package big.helper;
 
 import com.sun.istack.internal.NotNull;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,22 +11,26 @@ import static big.helper.Utils.print;
 /**
  * Created by Allan Wang on 2016-10-31.
  * <p>
- * Loops through all possible subsets (including original set itself) of a given String[]
+ * Loops through all possible subsets (including original set itself) of a given T[]
  */
-public class Combinations {
+public class Combinations<T> {
 
-    private final String[] fullList;
+    private final List<T> fullList;
 
-    public Combinations(String[] list) {
+    public Combinations(T[] list) {
+        fullList = new LinkedList<T>(Arrays.asList(list));
+    }
+
+    public Combinations(List<T> list) {
         fullList = list;
     }
 
-    public interface Callback {
-        void onResult(LinkedList<String> list);
+    public interface Callback<T> {
+        void onResult(LinkedList<T> list);
     }
 
-    public void getAllCombinations(@NotNull final Callback callback) {
-        getAllCombinations(1, fullList.length, callback);
+    public void getAllCombinations(@NotNull final Callback<T> callback) {
+        getAllCombinations(1, fullList.size(), callback);
     }
 
     public void printAll() {
@@ -40,12 +45,12 @@ public class Combinations {
         });
     }
 
-    public void getAllCombinations(int minSetSize, int maxSetSize, @NotNull final Callback callback) {
+    public void getAllCombinations(int minSetSize, int maxSetSize, @NotNull final Callback<T> callback) {
         maxSetSize = Math.max(minSetSize, maxSetSize);
         minSetSize = Math.min(minSetSize, maxSetSize);
-        if (maxSetSize > fullList.length) {
+        if (maxSetSize > fullList.size()) {
             print("Max size too big, defaulting to list length");
-            maxSetSize = fullList.length;
+            maxSetSize = fullList.size();
         }
         if (minSetSize <= 0) {
             minSetSize = 1;
@@ -55,16 +60,16 @@ public class Combinations {
         }
     }
 
-    public void getSubsets(LinkedList<String> preList, int lastInPre, int toGo, final @NotNull Callback callback) {
-        preList = (LinkedList<String>) preList.clone();
+    private void getSubsets(LinkedList<T> preList, int lastInPre, int toGo, final @NotNull Callback<T> callback) {
+        preList = (LinkedList<T>) preList.clone();
         if (toGo == 0) {
             callback.onResult(preList);
             return;
         }
-        preList.addLast(" "); //add blank element
+        preList.addLast(null); //add blank element
         toGo--;
-        for (int i = lastInPre + 1; i < fullList.length - toGo; i++) {
-            preList.set(preList.size() - 1, fullList[i]); //only switch out last element
+        for (int i = lastInPre + 1; i < fullList.size() - toGo; i++) {
+            preList.set(preList.size() - 1, fullList.get(i)); //only switch out last element
             getSubsets(preList, i, toGo, callback);
         }
     }

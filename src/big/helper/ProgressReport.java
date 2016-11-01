@@ -19,20 +19,25 @@ public class ProgressReport extends TimerTask {
         return timer;
     }
 
+    public static void stop(Timer timer) {
+        timer.cancel();
+        timer.purge();
+    }
+
     public interface Data {
-        int numberOfTests();
+        String report();
     }
 
     private Data mData;
     private int count = 0;
 
-    public ProgressReport(@NotNull Data data) {
+    private ProgressReport(@NotNull Data data) {
         mData = data;
     }
 
     @Override
     public void run() {
         count++;
-        Utils.print("Progress report: %d seconds, %d tests...", interval * count, mData.numberOfTests());
+        Utils.print("Progress report: %d seconds\t%s", interval * count, mData.report());
     }
 }
