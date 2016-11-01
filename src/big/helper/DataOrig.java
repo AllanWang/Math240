@@ -10,13 +10,13 @@ import static big.helper.Utils.print;
 /**
  * Created by Allan Wang on 2016-10-31.
  */
-public class Data implements Serializable {
+public class DataOrig implements Serializable {
     private BigInteger[] numbers;
-    private HashMap <String, String> map = new HashMap<>();
+    private HashMap<String, String> map = new HashMap<>();
     private BigInteger counter;
     private Callback callback;
 
-    public Data(BigInteger[] numbers) {
+    public DataOrig(BigInteger[] numbers) {
         this.numbers = numbers;
     }
 
