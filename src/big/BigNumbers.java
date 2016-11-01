@@ -1,9 +1,6 @@
 package big;
 
-import big.helper.BigUtils;
-import big.helper.Combinations;
-import big.helper.MapUtils;
-import big.helper.ProgressReport;
+import big.helper.*;
 
 import java.math.BigInteger;
 import java.util.*;
@@ -18,13 +15,30 @@ public class BigNumbers {
     //4, 5, 3203695
 
     public static void main(String[] args) {
+        data(binary);
+//        new Data(binary);
+    }
+
+    private static void data(BigInteger[] array) {
+        new Data(array).findMatch(new Data.Callback() {
+            @Override
+            public void onMatch(BigInteger sum, BigInteger[] list1, BigInteger[] list2) {
+                print("\tMatch found for sets\n%s\n\tand\n%s\n\tSum is %s",
+                        Arrays.toString(list1), Arrays.toString(list2), sum);
+            }
+
+            @Override
+            public void noMatch() {
+                print("No match");
+            }
+        });
+    }
+
+    private static void bruteForce(BigInteger[] numbers) {
         List<BigInteger> list = new ArrayList<>(Arrays.asList(numbers));
         Collections.sort(list);
-        trim(list);
-
-//        print(list.get(2).toString());
-//        print(tdFactors(list.get(2)).toString());
         bruteForce(list);
+
     }
 
     public static void bruteForce(List<BigInteger> full) {
@@ -43,6 +57,16 @@ public class BigNumbers {
         ProgressReport.stop(report);
         print("Finished with %d tests.", testCount[0]);
     }
+
+    private static BigInteger[] binary ={
+            new BigInteger("1"),
+            new BigInteger("2"),
+            new BigInteger("4"),
+            new BigInteger("8"),
+            new BigInteger("16"),
+            new BigInteger("32"),
+            new BigInteger("64")
+    };
 
     private static BigInteger[] test = {
             new BigInteger("35"),
