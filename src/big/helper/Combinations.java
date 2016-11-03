@@ -56,21 +56,22 @@ public class Combinations<T> {
             minSetSize = 1;
         }
         for (int i = minSetSize; i <= maxSetSize; i++) {
-            getSubsets(new LinkedList<>(), -1, i, callback);
+            if (!getSubsets(new LinkedList<>(), -1, i, callback)) break;
         }
     }
 
-    private void getSubsets(LinkedList<T> preList, int lastInPre, int toGo, final @NotNull Callback<T> callback) {
+    private boolean getSubsets(LinkedList<T> preList, int lastInPre, int toGo, final @NotNull Callback<T> callback) {
         preList = (LinkedList<T>) preList.clone();
         if (toGo == 0) {
             callback.onResult(preList);
-            return;
+            return false;
         }
         preList.addLast(null); //add blank element
         toGo--;
         for (int i = lastInPre + 1; i < fullList.size() - toGo; i++) {
             preList.set(preList.size() - 1, fullList.get(i)); //only switch out last element
-            getSubsets(preList, i, toGo, callback);
+            if (!getSubsets(preList, i, toGo, callback)) return false;
         }
+        return true;
     }
 }

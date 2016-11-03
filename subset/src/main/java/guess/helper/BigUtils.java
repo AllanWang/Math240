@@ -11,6 +11,14 @@ import java.util.ListIterator;
  */
 public class BigUtils {
 
+    public static BigInteger[] getArray(String[] array) {
+        BigInteger[] newArray = new BigInteger[array.length];
+        for (int i = 0; i < array.length; i++) {
+            newArray[i] = new BigInteger(array[i]);
+        }
+        return newArray;
+    }
+
     public static BigInteger trim(List<BigInteger> list) {
         BigInteger smallest = null;
         for (BigInteger i : list) {
@@ -64,34 +72,26 @@ public class BigUtils {
         return result;
     }
 
-    public static LinkedList tdFactors(BigInteger n)
-    {
+    public static LinkedList tdFactors(BigInteger n) {
         BigInteger two = BigInteger.valueOf(2);
         LinkedList<BigInteger> fs = new LinkedList<>();
 
-        if (n.compareTo(two) < 0)
-        {
+        if (n.compareTo(two) < 0) {
             throw new IllegalArgumentException("must be greater than one");
         }
 
-        while (n.mod(two).equals(BigInteger.ZERO))
-        {
+        while (n.mod(two).equals(BigInteger.ZERO)) {
             fs.add(two);
             n = n.divide(two);
         }
 
-        if (n.compareTo(BigInteger.ONE) > 0)
-        {
+        if (n.compareTo(BigInteger.ONE) > 0) {
             BigInteger f = BigInteger.valueOf(3);
-            while (f.multiply(f).compareTo(n) <= 0)
-            {
-                if (n.mod(f).equals(BigInteger.ZERO))
-                {
+            while (f.multiply(f).compareTo(n) <= 0) {
+                if (n.mod(f).equals(BigInteger.ZERO)) {
                     fs.add(f);
                     n = n.divide(f);
-                }
-                else
-                {
+                } else {
                     f = f.add(two);
                 }
             }
