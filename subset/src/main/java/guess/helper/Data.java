@@ -1,7 +1,5 @@
 package guess.helper;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.sun.istack.internal.NotNull;
 import guess.BigNumbers;
 import org.apache.lucene.util.OpenBitSet;
@@ -18,27 +16,30 @@ import java.util.*;
  */
 public class Data {
     private final BigInteger[] numbers;
-    private final List<BiMap<BigInteger, OpenBitSet>> mapList;
-    private Timer mTimer;
+    private final List<BigMap> mapList = new ArrayList<>();
+    private final String FILE_PREFIX = "C:\\Users\\User7681\\Downloads\\BigMapData_";
+    private int currentSubsetSize;
+    private ProgressReport mReport = new ProgressReport(60, () -> {
+        print("Progress: subset %d, %d entries", currentSubsetSize, mapList.get(currentSubsetSize-1).keySet().size());
+    });
 
     private Callback callback;
 
     public static void main(String[] args) {
-        new Data(BigNumbers.numbersSorted).getAllSums(new Callback() {
+        new Data(BigNumbers.numbersOrig).getAllSums(new Callback() {
             @Override
             public void onMatch(BigInteger sum, OpenBitSet set1, OpenBitSet set2) {
-
             }
 
             @Override
-            public void onSubSetFinish(int size, BiMap<BigInteger, OpenBitSet> map) {
-                print("Getting subsets of size %d...", size);
+            public void onSubSetFinish(int size, BigMap map) {
+//                print("Getting subsets of size %d...", size);
             }
 
             @Override
-            public void onNoMatch(List<BiMap<BigInteger, OpenBitSet>> mapList) {
+            public void onNoMatch(List<BigMap> mapList) {
                 print("No match");
-                for (BiMap<BigInteger, OpenBitSet> subsets : mapList) {
+                for (BigMap subsets : mapList) {
                     for (BigInteger sum : subsets.keySet()) {
                         print("Sum %s, bitset %s", sum.toString(), s(subsets.get(sum)));
                     }
@@ -47,29 +48,31 @@ public class Data {
         });
     }
 
+    public Data(BigInteger[] numbers) {
+        this.numbers = numbers;
+        for (int i = 0; i < numbers.length; i++) { //initialize each list
+            mapList.add(BigMap.readFromFile(FILE_PREFIX + (i+1)));
+        }
+    }
+
     public interface Callback {
         void onMatch(BigInteger sum, OpenBitSet set1, OpenBitSet set2);
-        void onSubSetFinish(int size, BiMap<BigInteger, OpenBitSet> map);
-        void onNoMatch(List<BiMap<BigInteger, OpenBitSet>> mapList);
+        void onSubSetFinish(int size, BigMap map);
+        void onNoMatch(List<BigMap> mapList);
     }
 
     public boolean getAllSums(@NotNull Callback callback) {
         this.callback = callback;
-        for (int i = 1; i < numbers.length; i++) { //get subsets by size i
-            print("Getting subsets of size %d...", i);
-            if (mapOfSize(i)) return true;
-            callback.onSubSetFinish(i, mapList.get(i-1));
+        mReport.start();
+        for (currentSubsetSize = 1; currentSubsetSize < numbers.length; currentSubsetSize++) { //get subsets by size i
+            print("Getting subsets of size %d...", currentSubsetSize);
+            if (mapOfSize(currentSubsetSize)) return true;
+            callback.onSubSetFinish(currentSubsetSize, mapList.get(currentSubsetSize-1));
+            mapList.get(currentSubsetSize-1).saveToFile(FILE_PREFIX + currentSubsetSize);
         }
+        mReport.stop();
         callback.onNoMatch(mapList);
         return false;
-    }
-
-    public Data(BigInteger[] numbers) {
-        this.numbers = numbers;
-        mapList = new ArrayList<>(numbers.length);
-        for (BigInteger number : numbers) { //initialize each list
-            mapList.add(HashBiMap.create());
-        }
     }
 
     private boolean mapOfSize(int size) {
@@ -91,7 +94,7 @@ public class Data {
         return false;
     }
 
-    private boolean getSubsetSums(int oldCardinality, BiMap<BigInteger, OpenBitSet> oldMap) {
+    private boolean getSubsetSums(int oldCardinality, BigMap oldMap) {
         for (BigInteger prevSum : oldMap.keySet()) {
             OpenBitSet prevBitSet = (OpenBitSet) oldMap.get(prevSum).clone();
             int lastSet = -1;
@@ -113,10 +116,10 @@ public class Data {
 
     private boolean push(BigInteger sum, OpenBitSet key) {
         int index = (int) key.cardinality();
-        for (BiMap<BigInteger, OpenBitSet> bimap : mapList) {
-            if (bimap.containsKey(sum)) {
-                print("Match found for sum %s\n\t%s\n\t%s", sum.toString(), Arrays.toString(getNumbers(key)), Arrays.toString(getNumbers(bimap.get(sum))));
-                callback.onMatch(sum, (OpenBitSet) bimap.get(sum), key);
+        for (BigMap map : mapList) {
+            if (map.containsKey(sum)) {
+                print("Match found for sum %s\n\t%s\n\t%s", sum.toString(), BigMap.bitString(key, numbers), map.getString(sum, numbers));
+                callback.onMatch(sum, map.get(sum), key);
                 return true;
             }
         }
@@ -128,21 +131,11 @@ public class Data {
         return Arrays.toString(bitSet.getBits());
     }
 
-    private BigInteger[] getNumbers(OpenBitSet bitSet) {
-        BigInteger[] array = new BigInteger[(int) bitSet.cardinality()];
-        int ii = -1;
-        for (int i = 0; i < array.length; i++) {
-            ii = bitSet.nextSetBit(ii + 1);
-            array[i] = numbers[ii];
-        }
-        return array;
-    }
-
-    public static void print(String s, Object... o) {
+    private static void print(String s, Object... o) {
         System.out.println(String.format(Locale.CANADA, s, o));
     }
 
-    public static void crash(String s, Object... o) {
+    private static void crash(String s, Object... o) {
         throw new RuntimeException(String.format(Locale.CANADA, s, o));
     }
 

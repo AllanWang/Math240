@@ -10,34 +10,31 @@ import java.util.TimerTask;
  */
 public class ProgressReport extends TimerTask {
 
-    private static final int interval = 5;
+    private final int interval;
+    private final Callback callback;
+    private final Timer timer = new Timer();
 
-    public static Timer start(@NotNull Data data) {
-        final Timer timer = new Timer();
-        final ProgressReport report = new ProgressReport(data);
-        timer.schedule(report, 3000, interval * 1000);
-        return timer;
+
+    public ProgressReport(int interval, @NotNull Callback callback) {
+        this.interval = interval;
+        this.callback = callback;
     }
 
-    public static void stop(Timer timer) {
+    public interface Callback {
+        void onReport();
+    }
+
+    public void start() {
+        timer.schedule(this, 500, interval * 1000); //slight delay before start
+    }
+
+    public void stop() {
         timer.cancel();
         timer.purge();
     }
 
-    public interface Data {
-        String report();
-    }
-
-    private Data mData;
-    private int count = 0;
-
-    private ProgressReport(@NotNull Data data) {
-        mData = data;
-    }
-
     @Override
     public void run() {
-        count++;
-        Utils.print("Progress report: %d seconds\t%s", interval * count, mData.report());
+        callback.onReport();
     }
 }
