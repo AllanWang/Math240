@@ -1,8 +1,6 @@
 package guess;
 
-import guess.helper.BigUtils;
-import guess.helper.Data;
-import guess.helper.Utils;
+import org.apache.lucene.util.OpenBitSet;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -11,6 +9,22 @@ import java.util.Arrays;
  * Created by Allan Wang on 2016-10-31.
  */
 public class BigNumbers {
+
+    public static void main(String[] args) {
+        bitSetTest();
+    }
+
+    private static void bitSetTest() {
+        OpenBitSet bitSet = new OpenBitSet(90);
+        Utils.print("Init %d %d", bitSet.cardinality(), bitSet.capacity());
+        Utils.print("Orig %s", s(bitSet));
+        bitSet.set(80);
+        Utils.print("New %s", s(bitSet));
+    }
+
+    private static String s(OpenBitSet bitSet) {
+        return Arrays.toString(bitSet.getBits());
+    }
 
     public static BigInteger[] binary = {
             new BigInteger("1"),
