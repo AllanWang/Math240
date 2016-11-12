@@ -14,7 +14,7 @@ dependencies {
 //    compile group: 'com.google.guava', name: 'guava', version: '20.0'
 
     // https://mvnrepository.com/artifact/org.apache.lucene/lucene-core
-//    compile group: 'org.apache.lucene', name: 'lucene-core', version: '3.6.0'
+    compile group: 'org.apache.lucene', name: 'lucene-core', version: '3.6.0'
 
     // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
 //    compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.14.2.1'

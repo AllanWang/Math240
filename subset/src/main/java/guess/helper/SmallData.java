@@ -5,7 +5,10 @@ import guess.BigNumbers;
 import org.apache.lucene.util.OpenBitSet;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by Allan Wang on 2016-10-31.
@@ -14,11 +17,10 @@ import java.util.*;
  * Calculating by set size will hopefully result in a faster match
  * Most functions that return a boolean return true for a match and false for otherwise
  */
-public class Data {
-    private final BigInteger[] numbers;
-    private final List<BigMap> mapList = new ArrayList<>();
-    private BigMap mRandMap = new BigMap();
-    private final String FILE_PREFIX = "C:\\Users\\User7681\\Downloads\\BigMapData_";
+public class SmallData {
+    private final Integer[] numbers;
+    private final List<SmallMap> mapList = new ArrayList<>();
+    private SmallMap mRandMap = new SmallMap();
     private int currentSubsetSize;
     private ProgressReport mReport = new ProgressReport(15, () -> {
         if (currentSubsetSize > 0) {
@@ -31,44 +33,43 @@ public class Data {
     private Callback callback;
 
     public static void main(String[] args) {
-//        new Data(BigNumbers.numbersOrig).getAllSums(new Callback() {
-//            @Override
-//            public void onMatch(BigInteger sum, OpenBitSet set1, OpenBitSet set2) {
-//            }
-//
-//            @Override
-//            public void onSubSetFinish(int size, BigMap map) {
-////                print("Getting subsets of size %d...", size);
-//            }
-//
-//            @Override
-//            public void onNoMatch(List<BigMap> mapList) {
-//                print("No match");
-//                for (BigMap subsets : mapList) {
-//                    for (BigInteger sum : subsets.keySet()) {
-//                        print("Sum %s, bitset %s", sum.toString(), s(subsets.get(sum)));
-//                    }
-//                }
-//            }
-//        });
-        new Data(BigNumbers.numbersOrig).randomMapOfSize(25);
+        new SmallData(BigNumbers.list_10000).getAllSums(new Callback() {
+            @Override
+            public void onMatch(Integer sum, OpenBitSet set1, OpenBitSet set2) {
+            }
+
+            @Override
+            public void onSubSetFinish(int size, SmallMap map) {
+//                print("Getting subsets of size %d...", size);
+            }
+
+            @Override
+            public void onNoMatch(List<SmallMap> mapList) {
+                print("No match");
+                for (SmallMap subsets : mapList) {
+                    for (Integer sum : subsets.keySet()) {
+                        print("Sum %s, bitset %s", sum.toString(), s(subsets.get(sum)));
+                    }
+                }
+            }
+        });
     }
 
-    public Data(BigInteger[] numbers) {
+    public SmallData(Integer[] numbers) {
         this.numbers = numbers;
     }
 
     public interface Callback {
-        void onMatch(BigInteger sum, OpenBitSet set1, OpenBitSet set2);
+        void onMatch(Integer sum, OpenBitSet set1, OpenBitSet set2);
 
-        void onSubSetFinish(int size, BigMap map);
+        void onSubSetFinish(int size, SmallMap map);
 
-        void onNoMatch(List<BigMap> mapList);
+        void onNoMatch(List<SmallMap> mapList);
     }
 
     public boolean getAllSums(@NotNull Callback callback) {
-        for (int i = 0; i < numbers.length; i++) { //initialize each list
-            mapList.add(BigMap.readFromFile(FILE_PREFIX + (i + 1)));
+        for (Integer number : numbers) { //initialize each list
+            mapList.add(new SmallMap());
         }
         this.callback = callback;
         mReport.start();
@@ -76,7 +77,6 @@ public class Data {
             print("Getting subsets of size %d...", currentSubsetSize);
             if (mapOfSize(currentSubsetSize)) return true;
             callback.onSubSetFinish(currentSubsetSize, mapList.get(currentSubsetSize - 1));
-            mapList.get(currentSubsetSize - 1).saveToFile(FILE_PREFIX + currentSubsetSize);
         }
         mReport.stop();
         callback.onNoMatch(mapList);
@@ -105,13 +105,13 @@ public class Data {
     private void randomMapOfSize(int size) {
         currentSubsetSize = -size;
         mReport.start();
-        BigInteger sum = BigInteger.ZERO;
+        Integer sum = 0;
         OpenBitSet bitSet = new OpenBitSet(numbers.length);
         boolean skip = false;
         for (int i = 0; ; i = (i + 1) % numbers.length) {
             if (bitSet.get(i)) continue;
             if (skip) {
-                switch ((int)bitSet.cardinality()) {
+                switch ((int) bitSet.cardinality()) {
                     case 7:
                     case 11:
                     case 13:
@@ -122,28 +122,28 @@ public class Data {
                 skip = true;
             }
             bitSet.fastSet(i);
-            sum = sum.add(numbers[i]);
+            sum += numbers[i];
             if (bitSet.cardinality() == size) { //subset size reached
                 if (mRandMap.containsKey(sum)) {
                     if (mRandMap.get(sum).equals(bitSet)) {
                         print("Repeat");
                     } else {
-                        print("Match found for sum %s\n\t%s\n\t%s", sum.toString(), BigMap.bitString(bitSet, numbers), mRandMap.getString(sum, numbers));
+                        print("Match found for sum %s\n\t%s\n\t%s", sum.toString(), SmallMap.bitString(bitSet, numbers), mRandMap.getString(sum, numbers));
                         mReport.stop();
                         return;
                     }
                 } else {
                     mRandMap.put(sum, bitSet);
                 }
-                sum = BigInteger.ZERO;
+                sum = 0;
                 bitSet = new OpenBitSet(numbers.length);
             }
         }
 
     }
 
-    private boolean getSubsetSums(int oldCardinality, BigMap oldMap) {
-        for (BigInteger prevSum : oldMap.keySet()) {
+    private boolean getSubsetSums(int oldCardinality, SmallMap oldMap) {
+        for (Integer prevSum : oldMap.keySet()) {
             OpenBitSet prevBitSet = (OpenBitSet) oldMap.get(prevSum).clone();
             int lastSet = -1;
             for (int i = 0; i < oldCardinality; i++) {
@@ -156,19 +156,19 @@ public class Data {
         return false;
     }
 
-    private boolean getSum(BigInteger prevSum, OpenBitSet prevBitSet, int toggle) {
+    private boolean getSum(Integer prevSum, OpenBitSet prevBitSet, int toggle) {
         OpenBitSet newBitSet = (OpenBitSet) prevBitSet.clone();
         newBitSet.set(toggle);
-        return push(prevSum.add(numbers[toggle]), newBitSet);
+        return push(prevSum + numbers[toggle], newBitSet);
     }
 
-    private boolean push(BigInteger sum, OpenBitSet key) {
+    private boolean push(Integer sum, OpenBitSet key) {
         int index = (int) key.cardinality();
-        for (BigMap map : mapList) {
+        for (SmallMap map : mapList) {
             if (map.containsKey(sum)) {
-                print("Match found for sum %s\n\t%s\n\t%s", sum.toString(), BigMap.bitString(key, numbers), map.getString(sum, numbers));
+                print("Match found for sum %s\n\t%s\n\t%s", sum.toString(), SmallMap.bitString(key, numbers), map.getString(sum, numbers));
                 callback.onMatch(sum, map.get(sum), key);
-                return true;
+                return false;
             }
         }
         mapList.get(index - 1).put(sum, key);
