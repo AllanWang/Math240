@@ -13,6 +13,7 @@ public class ProgressReport extends TimerTask {
     private final int interval;
     private final Callback callback;
     private final Timer timer = new Timer();
+    private boolean running = false;
 
 
     public ProgressReport(int interval, @NotNull Callback callback) {
@@ -25,10 +26,14 @@ public class ProgressReport extends TimerTask {
     }
 
     public void start() {
+        if (running) return;
+        running = true;
         timer.schedule(this, 500, interval * 1000); //slight delay before start
     }
 
     public void stop() {
+        if (!running) return;
+        running = false;
         timer.cancel();
         timer.purge();
     }

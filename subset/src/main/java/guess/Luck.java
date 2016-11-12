@@ -14,14 +14,14 @@ import java.util.Random;
  */
 public class Luck {
 
-    private static BigInteger[] numbers = BigNumbers.numbersOrig;
+    private static BigInteger[] numbers = BigNumbers.numbersShuffled;
     private static HashMap<BigInteger, OpenBitSet> map = new HashMap<>();
     private static ProgressReport mReport = new ProgressReport(15, () -> {
         print("Progress: %d entries", map.keySet().size());
     });
 
     public static void main(String[] args) {
-        checkLuck(20);
+        checkLuck(21);
     }
 
     private static void checkLuck(int luckyNumber) {
@@ -36,13 +36,37 @@ public class Luck {
                 bitSet.fastSet(i);
                 sum = sum.add(numbers[i]);
             }
-            if (bitSet.cardinality() >= luckyNumber) {
+            if (bitSet.cardinality() == luckyNumber) {
                 isLucky = check(sum, bitSet);
 //                if (bitSet.cardinality() >= luckyNumber + 1) {
-                    sum = BigInteger.ZERO;
-                    bitSet = new OpenBitSet(numbers.length);
+                sum = BigInteger.ZERO;
+                bitSet = new OpenBitSet(numbers.length);
 //                }
             }
+        }
+    }
+
+    private static void checkLuck2(int luckyNumber) {
+        BigInteger sum = BigInteger.ZERO;
+        Random rnd = new Random();
+        OpenBitSet bitSet = new OpenBitSet(numbers.length);
+        mReport.start();
+        boolean isLucky = false;
+        while (!isLucky) {
+            while (bitSet.cardinality() < luckyNumber) {
+                int index = rnd.nextInt(numbers.length);
+                if (bitSet.get(index)) continue;
+                bitSet.fastSet(index);
+                sum = sum.add(numbers[index]);
+            }
+            isLucky = check(sum, bitSet);
+            int remove = rnd.nextInt(luckyNumber);
+            int index = 0;
+            for (int i = 0; i < remove; i++) {
+                index = bitSet.nextSetBit(index);
+            }
+            bitSet.fastClear(index);
+            sum = sum.subtract(numbers[index]);
         }
     }
 
